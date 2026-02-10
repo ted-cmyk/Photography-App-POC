@@ -1,9 +1,9 @@
 'use client'
 
 import React, { useState } from 'react';
-import { Heart, MapPin, Camera, Calendar, Star, Filter, Search, X, MessageCircle, Home, User, Mail, Image, BookOpen, Grid, Upload, ChevronRight, Check, DollarSign, Bell, Settings, ArrowLeft, Plus, Eye } from 'lucide-react';
+import { Heart, MapPin, Camera, Calendar, Star, Filter, Search, X, MessageCircle, Home, User, Image, Upload, ChevronRight, Check, DollarSign, Bell, Settings, ArrowLeft, Plus, Eye, Grid } from 'lucide-react';
 
-// ─── SHARED DATA ────────────────────────────────────────────────────────────
+// ─── DESIGN TOKENS ───────────────────────────────────────────────────────────
 
 const gradients = [
   'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -14,16 +14,66 @@ const gradients = [
   'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
 ];
 const g = (seed) => gradients[Math.abs(seed) % gradients.length];
+const PRIMARY = g(0); // purple-blue — used for all primary CTAs
+
+// ─── BASE COMPONENTS ─────────────────────────────────────────────────────────
 
 const Avatar = ({ name, seed = 0, size = 'md' }) => {
   const initials = name ? name.split(' ').map(n => n[0]).join('') : '?';
-  const sizes = { sm: 'w-8 h-8 text-xs', md: 'w-12 h-12 text-sm', lg: 'w-16 h-16 text-base', xl: 'w-20 h-20 text-xl' };
+  const sizes = { xs: 'w-7 h-7 text-xs', sm: 'w-9 h-9 text-xs', md: 'w-12 h-12 text-sm', lg: 'w-16 h-16 text-base', xl: 'w-20 h-20 text-xl' };
   return (
-    <div className={`${sizes[size]} rounded-full flex items-center justify-center text-white font-bold flex-shrink-0`} style={{ background: g(seed) }}>
+    <div className={`${sizes[size]} rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 ring-2 ring-black`} style={{ background: g(seed) }}>
       {initials}
     </div>
   );
 };
+
+const Pill = ({ children, color = 'zinc' }) => {
+  const colors = {
+    zinc: 'bg-zinc-800 text-zinc-300 border-zinc-700',
+    green: 'bg-green-500/10 text-green-400 border-green-500/20',
+    blue: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+    yellow: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+    purple: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
+  };
+  return <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${colors[color]}`}>{children}</span>;
+};
+
+const PrimaryButton = ({ children, onClick, className = '', icon: Icon }) => (
+  <button onClick={onClick} className={`flex items-center justify-center gap-2 py-3 px-6 rounded-xl text-white font-semibold transition active:scale-95 ${className}`} style={{ background: PRIMARY }}>
+    {Icon && <Icon className="w-4 h-4" />}{children}
+  </button>
+);
+
+const SecondaryButton = ({ children, onClick, className = '', icon: Icon }) => (
+  <button onClick={onClick} className={`flex items-center justify-center gap-2 py-3 px-6 rounded-xl text-white font-semibold border border-zinc-700 hover:border-zinc-500 bg-zinc-900 transition active:scale-95 ${className}`}>
+    {Icon && <Icon className="w-4 h-4" />}{children}
+  </button>
+);
+
+const PageHeader = ({ title, subtitle, action }) => (
+  <div className="bg-zinc-950/95 backdrop-blur border-b border-zinc-800/60 sticky top-0 z-40">
+    <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div>
+        <h1 className="text-xl font-bold text-white tracking-tight">{title}</h1>
+        {subtitle && <p className="text-zinc-500 text-sm mt-0.5">{subtitle}</p>}
+      </div>
+      {action}
+    </div>
+  </div>
+);
+
+const SectionTitle = ({ children }) => (
+  <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">{children}</h2>
+);
+
+const Card = ({ children, onClick, className = '' }) => (
+  <div onClick={onClick} className={`bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden transition ${onClick ? 'hover:border-zinc-600 cursor-pointer active:scale-[0.99]' : ''} ${className}`}>
+    {children}
+  </div>
+);
+
+// ─── DATA ─────────────────────────────────────────────────────────────────────
 
 const photographers = [
   { id: 1, name: "Sarah Mitchell", specialty: "Wedding & Engagement", style: ["Romantic", "Bright", "Candid"], location: "Downtown Charleston", bio: "Capturing love stories across the Lowcountry for 8+ years.", rating: 4.9, reviews: 127, packages: [{ name: "Engagement Session", price: "$450", details: "2 hours, 50+ edited photos, online gallery" }, { name: "Full Wedding Day", price: "$3,200", details: "8 hours, 500+ photos, second shooter, album" }] },
@@ -43,113 +93,67 @@ const mockGalleries = [
   { id: 4, client: "Thompson Engagement", date: "Feb 8, 2026", photos: 128, shared: false, coverSeed: 1 },
 ];
 
-// ─── SHARED COMPONENTS ───────────────────────────────────────────────────────
+// ─── NAV ──────────────────────────────────────────────────────────────────────
 
-const PhotographerProfileCard = ({ photographer, onBack, onBook }) => (
-  <div className="min-h-screen bg-zinc-950 pb-20">
-    <div className="bg-zinc-950/95 backdrop-blur border-b border-zinc-800 sticky top-0 z-40">
-      <div className="max-w-6xl mx-auto px-4 py-3">
-        <button onClick={onBack} className="flex items-center gap-2 text-zinc-400 hover:text-white transition">
-          <ArrowLeft className="w-5 h-5" /> Back
-        </button>
-      </div>
-    </div>
-    <div className="max-w-6xl mx-auto px-4 py-6">
-      <div className="flex flex-col gap-4 mb-6">
-        <div className="flex items-start gap-4">
-          <Avatar name={photographer.name} seed={photographer.id} size="xl" />
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold text-white mb-1">{photographer.name}</h1>
-            <div className="flex flex-wrap gap-3 text-zinc-400 text-sm mb-2">
-              <span className="flex items-center gap-1"><Camera className="w-4 h-4" />{photographer.specialty}</span>
-              <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{photographer.location}</span>
-            </div>
-            <div className="flex items-center gap-1 text-sm">
-              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-              <span className="font-semibold text-white">{photographer.rating}</span>
-              <span className="text-zinc-500">({photographer.reviews} reviews)</span>
-            </div>
-          </div>
-        </div>
-        <p className="text-zinc-300 text-sm">{photographer.bio}</p>
-        <div className="flex flex-wrap gap-2">
-          {photographer.style.map((s, i) => <span key={i} className="px-3 py-1 bg-zinc-800 text-zinc-300 rounded-full text-xs border border-zinc-700">{s}</span>)}
-        </div>
-        <div className="flex gap-3">
-          <button onClick={() => onBook(photographer)} className="flex-1 py-3 bg-white hover:bg-zinc-100 text-black font-semibold rounded-lg transition flex items-center justify-center gap-2">
-            <Calendar className="w-5 h-5" /> Book Session
+const BottomNav = ({ items, active, onNavigate }) => (
+  <div className="fixed bottom-0 left-0 right-0 bg-black/95 backdrop-blur-xl border-t border-white/5 z-50">
+    <div className="max-w-lg mx-auto px-1 py-1 flex items-center justify-around">
+      {items.map(({ id, icon: Icon, label }) => {
+        const isActive = active === id;
+        return (
+          <button key={id} onClick={() => onNavigate(id)} className="flex flex-col items-center gap-1 py-2 px-3 rounded-xl transition min-w-[64px] relative">
+            {isActive && <div className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full" style={{ background: PRIMARY }} />}
+            <Icon className={`w-6 h-6 transition ${isActive ? 'text-white' : 'text-zinc-500'}`} />
+            <span className={`text-xs font-medium transition ${isActive ? 'text-white' : 'text-zinc-500'}`}>{label}</span>
           </button>
-          <button className="px-4 py-3 bg-white/10 hover:bg-white/20 text-white rounded-lg transition border border-white/20">
-            <MessageCircle className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
-      <div className="mb-6">
-        <h2 className="text-lg font-bold text-white mb-3">Portfolio</h2>
-        <div className="grid grid-cols-3 gap-2">
-          {Array(6).fill(0).map((_, i) => <div key={i} className="aspect-square rounded-lg" style={{ background: g(photographer.id + i) }} />)}
-        </div>
-      </div>
-      <div>
-        <h2 className="text-lg font-bold text-white mb-3">Packages</h2>
-        <div className="grid sm:grid-cols-2 gap-3">
-          {photographer.packages.map((pkg, i) => (
-            <div key={i} className="border border-zinc-800 rounded-lg p-4 bg-zinc-900 hover:border-zinc-600 transition cursor-pointer">
-              <p className="text-white font-bold mb-1">{pkg.name}</p>
-              <p className="text-rose-400 text-xl font-bold mb-1">{pkg.price}</p>
-              <p className="text-zinc-400 text-sm">{pkg.details}</p>
-            </div>
-          ))}
-        </div>
-      </div>
+        );
+      })}
     </div>
   </div>
 );
 
-const BookingConfirmation = ({ onBack }) => (
-  <div className="min-h-screen bg-zinc-950 flex items-center justify-center px-4">
-    <div className="max-w-md w-full bg-zinc-900 rounded-2xl p-8 text-center border border-zinc-800">
-      <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-green-500/20">
-        <Check className="w-8 h-8 text-green-400" />
-      </div>
-      <h2 className="text-2xl font-bold text-white mb-2">Booking Requested!</h2>
-      <p className="text-zinc-400 mb-6">Your photographer will confirm within 24 hours. You'll receive your photos through Viewfinder galleries.</p>
-      <button onClick={onBack} className="w-full py-3 bg-white hover:bg-zinc-100 text-black font-semibold rounded-lg transition">Back to Feed</button>
-    </div>
-  </div>
+const ClientNav = ({ active, onNavigate }) => (
+  <BottomNav active={active} onNavigate={onNavigate} items={[{ id: 'feed', icon: Home, label: 'For You' }, { id: 'find', icon: Search, label: 'Find' }, { id: 'saved', icon: Heart, label: 'Saved' }, { id: 'bookings', icon: Calendar, label: 'Bookings' }]} />
 );
 
-// ─── SPLASH + ROLE SELECTION ─────────────────────────────────────────────────
+const PhotographerNav = ({ active, onNavigate }) => (
+  <BottomNav active={active} onNavigate={onNavigate} items={[{ id: 'feed', icon: Home, label: 'Feed' }, { id: 'galleries', icon: Image, label: 'Galleries' }, { id: 'bookings', icon: Calendar, label: 'Bookings' }, { id: 'portfolio', icon: Grid, label: 'Portfolio' }, { id: 'account', icon: User, label: 'Account' }]} />
+);
+
+// ─── SPLASH & ONBOARDING ─────────────────────────────────────────────────────
 
 const SplashScreen = ({ onContinue }) => (
   <div className="min-h-screen bg-black flex flex-col relative overflow-hidden">
-    <div className="absolute -top-40 -left-40 w-96 h-96 rounded-full opacity-20" style={{ background: 'radial-gradient(circle, #667eea, transparent)' }} />
-    <div className="absolute -bottom-40 -right-40 w-96 h-96 rounded-full opacity-20" style={{ background: 'radial-gradient(circle, #f093fb, transparent)' }} />
-    <div className="relative flex flex-col flex-1 px-8 pt-20 pb-12">
-      <div className="flex items-center gap-3 mb-16">
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: g(0) }}>
-          <Camera className="w-5 h-5 text-white" />
-        </div>
-        <span className="text-white text-2xl font-bold tracking-tight">Viewfinder</span>
+    <div className="absolute -top-32 -left-32 w-80 h-80 rounded-full opacity-25" style={{ background: 'radial-gradient(circle, #667eea, transparent)' }} />
+    <div className="absolute -bottom-32 -right-32 w-80 h-80 rounded-full opacity-25" style={{ background: 'radial-gradient(circle, #f093fb, transparent)' }} />
+    <div className="absolute top-1/3 right-8 w-48 h-48 rounded-full opacity-10" style={{ background: 'radial-gradient(circle, #4facfe, transparent)' }} />
+    <div className="relative flex flex-col flex-1 px-7 pt-16 pb-10">
+      <div className="flex items-center gap-2.5 mb-14">
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center shadow-lg" style={{ background: PRIMARY }}><Camera className="w-5 h-5 text-white" /></div>
+        <span className="text-white text-xl font-bold tracking-tight">Viewfinder</span>
       </div>
-      <div className="mb-16">
-        <h1 className="text-5xl font-bold text-white leading-tight mb-4">
+      <div className="mb-12">
+        <h1 className="text-[52px] font-black text-white leading-[1.05] mb-5 tracking-tight">
           Discover.<br />Book.<br />
           <span style={{ background: 'linear-gradient(135deg, #667eea 0%, #f093fb 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Deliver.</span>
         </h1>
-        <p className="text-zinc-400 text-lg leading-relaxed">All in one place. Find local photographers you'll love, book securely, and receive your photos — without leaving the app.</p>
+        <p className="text-zinc-400 text-base leading-relaxed max-w-xs">Find local photographers you'll love, book securely, and get your photos — all in one place.</p>
       </div>
-      <div className="space-y-4 mb-16">
-        {[{ icon: Search, label: 'Discover', desc: 'Find photographers whose style you love' }, { icon: Calendar, label: 'Book', desc: 'Book and pay securely in minutes' }, { icon: Image, label: 'Deliver', desc: 'Receive your gallery right in the app' }].map(({ icon: Icon, label, desc }, i) => (
-          <div key={i} className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: g(i) }}><Icon className="w-5 h-5 text-white" /></div>
-            <div><p className="text-white font-semibold">{label}</p><p className="text-zinc-500 text-sm">{desc}</p></div>
+      <div className="space-y-3.5 mb-12">
+        {[
+          { icon: Search, label: 'Discover', desc: 'Find photographers whose style you love', seed: 0 },
+          { icon: Calendar, label: 'Book', desc: 'Book and pay securely in minutes', seed: 2 },
+          { icon: Image, label: 'Deliver', desc: 'Your gallery lands right in the app', seed: 4 },
+        ].map(({ icon: Icon, label, desc, seed }) => (
+          <div key={label} className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md" style={{ background: g(seed) }}><Icon className="w-4 h-4 text-white" /></div>
+            <div><p className="text-white font-semibold text-sm">{label}</p><p className="text-zinc-500 text-xs mt-0.5">{desc}</p></div>
           </div>
         ))}
       </div>
-      <div className="mt-auto">
-        <button onClick={onContinue} className="w-full py-4 rounded-2xl text-white font-bold text-lg" style={{ background: g(0) }}>Get Started</button>
-        <p className="text-center text-zinc-600 text-xs mt-4">100% real photographers · No AI images · 10% commission only</p>
+      <div className="mt-auto space-y-3">
+        <PrimaryButton onClick={onContinue} className="w-full text-base py-4 rounded-2xl shadow-xl">Get Started</PrimaryButton>
+        <p className="text-center text-zinc-600 text-xs">100% real photographers · No AI images · 10% only</p>
       </div>
     </div>
   </div>
@@ -157,77 +161,154 @@ const SplashScreen = ({ onContinue }) => (
 
 const RoleSelection = ({ onSelectRole }) => (
   <div className="min-h-screen bg-black flex flex-col px-6 py-12">
-    <div className="flex items-center gap-3 mb-12">
-      <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: g(0) }}><Camera className="w-4 h-4 text-white" /></div>
-      <span className="text-white font-bold text-lg">Viewfinder</span>
+    <div className="flex items-center gap-2.5 mb-10">
+      <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: PRIMARY }}><Camera className="w-4 h-4 text-white" /></div>
+      <span className="text-white font-bold">Viewfinder</span>
     </div>
-    <div className="mb-10">
-      <h2 className="text-3xl font-bold text-white mb-2">How will you use Viewfinder?</h2>
-      <p className="text-zinc-500">You'll get a tailored experience based on your role</p>
+    <div className="mb-8">
+      <h2 className="text-3xl font-black text-white tracking-tight mb-2">How will you use<br />Viewfinder?</h2>
+      <p className="text-zinc-500 text-sm">You'll get a tailored experience for your role</p>
     </div>
-    <div className="space-y-4 mb-10">
+    <div className="space-y-3 mb-8">
       {[
         { id: 'client', Icon: Search, title: "I'm looking for a photographer", desc: 'Discover, browse and book local photographers', seed: 0, features: ['Personalized photo feed', 'Book and pay securely', 'Receive your gallery in-app'] },
         { id: 'photographer', Icon: Camera, title: "I'm a photographer", desc: 'Grow your business and connect with clients', seed: 1, features: ['Free profile & portfolio', 'Keep 90% of every booking', 'Deliver galleries in-app'] },
       ].map((role) => (
-        <button key={role.id} onClick={() => onSelectRole(role.id)} className="w-full text-left bg-zinc-900 border border-zinc-800 hover:border-zinc-600 rounded-2xl p-5 transition group">
+        <button key={role.id} onClick={() => onSelectRole(role.id)} className="w-full text-left bg-zinc-900 border border-zinc-800 hover:border-zinc-600 rounded-2xl p-5 transition active:scale-[0.99] group">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center" style={{ background: g(role.seed) }}><role.Icon className="w-6 h-6 text-white" /></div>
+            <div className="w-11 h-11 rounded-xl flex-shrink-0 flex items-center justify-center shadow-md" style={{ background: g(role.seed) }}><role.Icon className="w-5 h-5 text-white" /></div>
             <div className="flex-1">
-              <p className="text-white font-bold text-lg mb-1">{role.title}</p>
+              <p className="text-white font-bold mb-1">{role.title}</p>
               <p className="text-zinc-500 text-sm mb-3">{role.desc}</p>
-              <div className="space-y-1">{role.features.map((f, i) => <div key={i} className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-zinc-600" /><span className="text-zinc-400 text-xs">{f}</span></div>)}</div>
+              <div className="space-y-1.5">
+                {role.features.map((f, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <Check className="w-3 h-3 text-zinc-500" />
+                    <span className="text-zinc-400 text-xs">{f}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-            <ChevronRight className="w-5 h-5 text-zinc-600 group-hover:text-white transition mt-1" />
+            <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-zinc-300 transition mt-1 flex-shrink-0" />
           </div>
         </button>
       ))}
     </div>
-    <button onClick={() => onSelectRole('client')} className="w-full py-3 text-zinc-500 hover:text-zinc-300 text-sm transition">Browse as guest →</button>
+    <button onClick={() => onSelectRole('client')} className="w-full py-3 text-zinc-600 hover:text-zinc-400 text-sm transition">Browse as guest →</button>
   </div>
 );
 
-// ─── CLIENT VIEW ─────────────────────────────────────────────────────────────
+// ─── SHARED SCREENS ───────────────────────────────────────────────────────────
 
-const ClientBottomNav = ({ active, onNavigate }) => {
-  const items = [{ id: 'feed', icon: Home, label: 'For You' }, { id: 'find', icon: Search, label: 'Find' }, { id: 'saved', icon: Heart, label: 'Saved' }, { id: 'bookings', icon: Calendar, label: 'Bookings' }];
-  return (
-    <div className="fixed bottom-0 left-0 right-0 bg-black/95 backdrop-blur-lg border-t border-white/10 z-50">
-      <div className="max-w-lg mx-auto px-2 py-2 flex items-center justify-around">
-        {items.map(({ id, icon: Icon, label }) => (
-          <button key={id} onClick={() => onNavigate(id)} className={`flex flex-col items-center gap-1 py-2 px-4 rounded-lg transition ${active === id ? 'text-white' : 'text-zinc-500 hover:text-white'}`}>
-            <Icon className="w-6 h-6" /><span className="text-xs font-medium">{label}</span>
-          </button>
+const PhotographerProfileScreen = ({ photographer, onBack, onBook }) => (
+  <div className="min-h-screen bg-zinc-950 pb-8">
+    <div className="bg-zinc-950/95 backdrop-blur border-b border-zinc-800/60 sticky top-0 z-40">
+      <div className="max-w-2xl mx-auto px-4 py-3">
+        <button onClick={onBack} className="flex items-center gap-1.5 text-zinc-400 hover:text-white transition text-sm">
+          <ArrowLeft className="w-4 h-4" /> Back
+        </button>
+      </div>
+    </div>
+    <div className="max-w-2xl mx-auto px-4 py-6">
+      {/* Hero */}
+      <div className="flex items-start gap-4 mb-4">
+        <Avatar name={photographer.name} seed={photographer.id} size="xl" />
+        <div className="flex-1 min-w-0">
+          <h1 className="text-2xl font-black text-white tracking-tight mb-1">{photographer.name}</h1>
+          <div className="flex flex-wrap gap-2 mb-2">
+            <span className="text-zinc-400 text-sm flex items-center gap-1"><Camera className="w-3.5 h-3.5" />{photographer.specialty}</span>
+            <span className="text-zinc-500">·</span>
+            <span className="text-zinc-400 text-sm flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{photographer.location}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+            <span className="text-white font-bold text-sm">{photographer.rating}</span>
+            <span className="text-zinc-500 text-sm">({photographer.reviews} reviews)</span>
+          </div>
+        </div>
+      </div>
+      <p className="text-zinc-300 text-sm leading-relaxed mb-4">{photographer.bio}</p>
+      <div className="flex flex-wrap gap-1.5 mb-5">
+        {photographer.style.map((s, i) => <Pill key={i}>{s}</Pill>)}
+      </div>
+      <div className="flex gap-2.5 mb-8">
+        <PrimaryButton onClick={() => onBook(photographer)} className="flex-1" icon={Calendar}>Book Session</PrimaryButton>
+        <SecondaryButton className="px-4"><MessageCircle className="w-5 h-5" /></SecondaryButton>
+      </div>
+      {/* Portfolio */}
+      <SectionTitle>Portfolio</SectionTitle>
+      <div className="grid grid-cols-3 gap-1.5 mb-8">
+        {Array(9).fill(0).map((_, i) => (
+          <div key={i} className="aspect-square rounded-xl overflow-hidden" style={{ background: g(photographer.id + i) }} />
+        ))}
+      </div>
+      {/* Packages */}
+      <SectionTitle>Packages & Pricing</SectionTitle>
+      <div className="space-y-2.5">
+        {photographer.packages.map((pkg, i) => (
+          <Card key={i} onClick={() => {}} className="p-4">
+            <div className="flex items-start justify-between mb-1">
+              <p className="text-white font-bold">{pkg.name}</p>
+              <p className="text-white font-black text-lg">{pkg.price}</p>
+            </div>
+            <p className="text-zinc-500 text-sm">{pkg.details}</p>
+          </Card>
         ))}
       </div>
     </div>
-  );
-};
+  </div>
+);
+
+const BookingConfirmation = ({ onBack }) => (
+  <div className="min-h-screen bg-zinc-950 flex items-center justify-center px-6">
+    <div className="max-w-sm w-full text-center">
+      <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6" style={{ background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)' }}>
+        <Check className="w-10 h-10 text-white" strokeWidth={3} />
+      </div>
+      <h2 className="text-3xl font-black text-white tracking-tight mb-3">You're booked!</h2>
+      <p className="text-zinc-400 leading-relaxed mb-8">Your photographer will confirm within 24 hours. Your photos will be delivered through Viewfinder galleries.</p>
+      <PrimaryButton onClick={onBack} className="w-full text-base py-4 rounded-2xl">Back to Feed</PrimaryButton>
+    </div>
+  </div>
+);
+
+// ─── CLIENT SCREENS ───────────────────────────────────────────────────────────
 
 const ClientFeed = ({ onViewProfile }) => (
   <div className="min-h-screen bg-black pb-20">
-    <div className="bg-black/50 backdrop-blur-lg border-b border-white/10 fixed top-0 left-0 right-0 z-40">
+    <div className="bg-black/60 backdrop-blur-xl border-b border-white/5 fixed top-0 left-0 right-0 z-40">
       <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-2"><Camera className="w-6 h-6 text-white" /><h1 className="text-lg font-bold text-white">Viewfinder</h1></div>
-        <Bell className="w-6 h-6 text-zinc-400" />
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: PRIMARY }}><Camera className="w-4 h-4 text-white" /></div>
+          <span className="text-white font-bold tracking-tight">Viewfinder</span>
+        </div>
+        <Bell className="w-5 h-5 text-zinc-500" />
       </div>
     </div>
-    <div className="max-w-4xl mx-auto pt-14">
+    <div className="pt-14">
       {photographers.map((photographer, pi) =>
         Array(2).fill(0).map((_, idx) => (
-          <div key={`${photographer.id}-${idx}`} className="relative w-full h-screen border-b border-gray-900">
-            <div className="w-full h-full" style={{ background: g(pi * 2 + idx) }} />
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent" />
-            <div className="absolute top-6 right-4 flex flex-col gap-4">
-              <button className="flex flex-col items-center gap-1"><Heart className="w-7 h-7 text-white" /><span className="text-white text-xs">Save</span></button>
-            </div>
-            <div className="absolute bottom-20 left-0 right-0 p-4 max-w-2xl">
-              <div className="flex items-center gap-3 mb-2">
-                <Avatar name={photographer.name} seed={photographer.id} size="sm" />
-                <div><p className="text-white font-bold">{photographer.name}</p><p className="text-white/70 text-xs">{photographer.specialty} · {photographer.location}</p></div>
+          <div key={`${photographer.id}-${idx}`} className="relative w-full h-screen">
+            <div className="absolute inset-0" style={{ background: g(pi * 2 + idx) }} />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent" />
+            {/* Top pill */}
+            <div className="absolute top-6 left-4 right-4 flex items-center justify-between">
+              <div className="flex items-center gap-2 bg-black/40 backdrop-blur-sm rounded-full px-3 py-1.5">
+                <Avatar name={photographer.name} seed={photographer.id} size="xs" />
+                <span className="text-white text-xs font-semibold">{photographer.name}</span>
+                <span className="text-white/50 text-xs">·</span>
+                <span className="text-white/70 text-xs">{photographer.specialty}</span>
               </div>
-              <p className="text-white/80 text-sm mb-3">{photographer.bio}</p>
-              <button onClick={() => onViewProfile(photographer)} className="w-full py-3 bg-white hover:bg-zinc-100 text-black font-semibold rounded-lg transition">View Portfolio & Book</button>
+              <button className="w-9 h-9 bg-black/40 backdrop-blur-sm rounded-full flex items-center justify-center">
+                <Heart className="w-4 h-4 text-white" />
+              </button>
+            </div>
+            {/* Bottom CTA */}
+            <div className="absolute bottom-24 left-0 right-0 px-4">
+              <p className="text-white/80 text-sm mb-4 line-clamp-2">{photographer.bio}</p>
+              <button onClick={() => onViewProfile(photographer)} className="w-full py-3.5 bg-white text-black font-bold rounded-2xl text-sm active:scale-[0.98] transition">
+                View Portfolio & Book
+              </button>
             </div>
           </div>
         ))
@@ -240,31 +321,34 @@ const ClientFind = ({ onViewProfile }) => {
   const [showFilters, setShowFilters] = useState(false);
   return (
     <div className="min-h-screen bg-zinc-950 pb-20">
-      <div className="bg-zinc-950/95 backdrop-blur border-b border-zinc-800 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-3">
-            <h1 className="text-2xl font-bold text-white">Find Photographers</h1>
-            <button onClick={() => setShowFilters(!showFilters)} className="flex items-center gap-2 px-3 py-2 bg-zinc-800 rounded-lg text-white text-sm"><Filter className="w-4 h-4" /> Filters</button>
-          </div>
-          <p className="text-zinc-500 text-sm">{photographers.length} photographers in Charleston</p>
-          {showFilters && (
-            <div className="mt-3 p-4 bg-zinc-900 rounded-lg border border-zinc-800">
-              <div className="grid grid-cols-3 gap-3">
-                {[{ label: 'Specialty', opts: ['Wedding', 'Portrait', 'Family', 'Real Estate', 'Events'] }, { label: 'Style', opts: ['Romantic', 'Moody', 'Bright', 'Candid'] }, { label: 'Location', opts: ['Downtown', 'Mount Pleasant', 'James Island'] }].map(({ label, opts }) => (
-                  <div key={label}><label className="text-xs text-zinc-400 mb-1 block">{label}</label>
-                    <select className="w-full px-2 py-1.5 bg-zinc-800 border border-zinc-700 text-white rounded text-sm"><option>All</option>{opts.map(o => <option key={o}>{o}</option>)}</select>
-                  </div>
-                ))}
+      <PageHeader
+        title="Find Photographers"
+        subtitle={`${photographers.length} photographers in Charleston`}
+        action={
+          <button onClick={() => setShowFilters(!showFilters)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-medium transition border ${showFilters ? 'bg-white text-black border-white' : 'border-zinc-700 text-zinc-300 hover:border-zinc-500'}`}>
+            <Filter className="w-3.5 h-3.5" /> Filters
+          </button>
+        }
+      />
+      {showFilters && (
+        <div className="max-w-3xl mx-auto px-4 pt-3">
+          <div className="p-4 bg-zinc-900 rounded-2xl border border-zinc-800 grid grid-cols-3 gap-3">
+            {[{ label: 'Specialty', opts: ['Wedding', 'Portrait', 'Family', 'Real Estate', 'Events'] }, { label: 'Style', opts: ['Romantic', 'Moody', 'Bright', 'Candid'] }, { label: 'Location', opts: ['Downtown', 'Mount Pleasant', 'James Island'] }].map(({ label, opts }) => (
+              <div key={label}>
+                <label className="text-xs text-zinc-500 mb-1.5 block font-medium">{label}</label>
+                <select className="w-full px-2.5 py-1.5 bg-zinc-800 border border-zinc-700 text-white rounded-lg text-xs focus:outline-none">
+                  <option>All</option>{opts.map(o => <option key={o}>{o}</option>)}
+                </select>
               </div>
-            </div>
-          )}
+            ))}
+          </div>
         </div>
-      </div>
-      <div className="max-w-7xl mx-auto px-4 py-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+      )}
+      <div className="max-w-3xl mx-auto px-4 py-4 grid grid-cols-3 gap-1">
         {photographers.map((p, pi) => Array(3).fill(0).map((_, idx) => (
-          <div key={`${p.id}-${idx}`} onClick={() => onViewProfile(p)} className="aspect-square rounded-lg cursor-pointer group relative overflow-hidden" style={{ background: g(pi * 3 + idx) }}>
-            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition flex items-end p-2">
-              <div><p className="text-white text-xs font-semibold">{p.name}</p><p className="text-white/70 text-xs">{p.specialty}</p></div>
+          <div key={`${p.id}-${idx}`} onClick={() => onViewProfile(p)} className="aspect-square cursor-pointer group relative overflow-hidden rounded-sm" style={{ background: g(pi * 3 + idx) }}>
+            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-end p-2">
+              <p className="text-white text-xs font-semibold truncate">{p.name}</p>
             </div>
           </div>
         )))}
@@ -275,23 +359,25 @@ const ClientFind = ({ onViewProfile }) => {
 
 const ClientSaved = ({ onViewProfile }) => (
   <div className="min-h-screen bg-zinc-950 pb-20">
-    <div className="bg-zinc-950/95 backdrop-blur border-b border-zinc-800 sticky top-0 z-40">
-      <div className="max-w-3xl mx-auto px-4 py-4"><h1 className="text-2xl font-bold text-white mb-1">Saved</h1><p className="text-zinc-500 text-sm">3 photographers</p></div>
-    </div>
-    <div className="max-w-3xl mx-auto px-4 py-6 space-y-4">
+    <PageHeader title="Saved" subtitle="3 photographers" />
+    <div className="max-w-2xl mx-auto px-4 py-5 space-y-3">
       {photographers.slice(0, 3).map((p, i) => (
-        <div key={p.id} onClick={() => onViewProfile(p)} className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 hover:border-zinc-600 cursor-pointer">
-          <div className="flex items-start gap-4 mb-3">
-            <Avatar name={p.name} seed={i} size="lg" />
-            <div className="flex-1"><h3 className="text-white font-bold mb-1">{p.name}</h3><p className="text-zinc-400 text-sm mb-1">{p.specialty}</p>
-              <div className="flex items-center gap-1 text-sm"><Star className="w-3 h-3 fill-yellow-400 text-yellow-400" /><span className="text-white text-xs">{p.rating}</span><span className="text-zinc-500 text-xs">({p.reviews})</span></div>
+        <Card key={p.id} onClick={() => onViewProfile(p)} className="p-4">
+          <div className="flex items-center gap-3 mb-3">
+            <Avatar name={p.name} seed={i} size="md" />
+            <div className="flex-1 min-w-0">
+              <p className="text-white font-bold truncate">{p.name}</p>
+              <p className="text-zinc-400 text-sm">{p.specialty}</p>
             </div>
-            <Heart className="w-5 h-5 text-rose-500 fill-rose-500 flex-shrink-0" />
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1"><Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" /><span className="text-white text-sm font-semibold">{p.rating}</span></div>
+              <Heart className="w-5 h-5 text-rose-500 fill-rose-500" />
+            </div>
           </div>
-          <div className="grid grid-cols-3 gap-1.5">
-            {Array(3).fill(0).map((_, idx) => <div key={idx} className="aspect-square rounded" style={{ background: g(i + idx + 1) }} />)}
+          <div className="grid grid-cols-3 gap-1">
+            {Array(3).fill(0).map((_, idx) => <div key={idx} className="aspect-square rounded-lg" style={{ background: g(i * 3 + idx + 1) }} />)}
           </div>
-        </div>
+        </Card>
       ))}
     </div>
   </div>
@@ -303,131 +389,117 @@ const ClientBookings = ({ onViewGallery }) => {
     { id: 2, photographer: photographers[2], date: "Jan 25, 2026", type: "Family Session", status: "completed", hasGallery: true, photoCount: 87 },
     { id: 3, photographer: photographers[4], date: "Dec 10, 2025", type: "Corporate Event", status: "completed", hasGallery: true, photoCount: 214 },
   ];
-  const statusStyles = { confirmed: 'bg-blue-500/10 text-blue-400 border-blue-500/20', completed: 'bg-green-500/10 text-green-400 border-green-500/20' };
+  const statusColor = { confirmed: 'blue', completed: 'green', pending: 'yellow' };
   return (
     <div className="min-h-screen bg-zinc-950 pb-20">
-      <div className="bg-zinc-950/95 backdrop-blur border-b border-zinc-800 sticky top-0 z-40">
-        <div className="max-w-3xl mx-auto px-4 py-4"><h1 className="text-2xl font-bold text-white mb-1">My Bookings</h1><p className="text-zinc-500 text-sm">3 sessions</p></div>
-      </div>
-      <div className="max-w-3xl mx-auto px-4 py-6 space-y-4">
-        {bookings.map((booking, i) => (
-          <div key={booking.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-            <div className="flex items-start gap-3 mb-3">
-              <Avatar name={booking.photographer.name} seed={i} size="md" />
-              <div className="flex-1">
-                <h3 className="text-white font-bold">{booking.photographer.name}</h3>
-                <p className="text-zinc-400 text-sm">{booking.type}</p>
-                <p className="text-zinc-500 text-xs mt-1">{booking.date}</p>
+      <PageHeader title="My Bookings" subtitle="3 sessions" />
+      <div className="max-w-2xl mx-auto px-4 py-5 space-y-3">
+        {bookings.map((b, i) => (
+          <Card key={b.id} className="p-4">
+            <div className="flex items-center gap-3 mb-3">
+              <Avatar name={b.photographer.name} seed={i + 2} size="md" />
+              <div className="flex-1 min-w-0">
+                <p className="text-white font-bold truncate">{b.photographer.name}</p>
+                <p className="text-zinc-400 text-sm">{b.type}</p>
+                <p className="text-zinc-600 text-xs mt-0.5">{b.date}</p>
               </div>
-              <span className={`px-2 py-1 rounded-full text-xs border ${statusStyles[booking.status]}`}>{booking.status}</span>
+              <Pill color={statusColor[b.status]}>{b.status}</Pill>
             </div>
-            {booking.hasGallery && (
-              <button onClick={() => onViewGallery(booking)} className="w-full mt-2 py-2.5 flex items-center justify-center gap-2 rounded-lg border border-zinc-700 hover:border-zinc-500 text-white text-sm transition" style={{ background: 'linear-gradient(135deg, rgba(102,126,234,0.15), rgba(240,147,251,0.15))' }}>
-                <Image className="w-4 h-4" />
-                View Gallery · {booking.photoCount} photos
+            {b.hasGallery ? (
+              <button onClick={() => onViewGallery(b)} className="w-full py-2.5 rounded-xl border border-zinc-700 hover:border-zinc-500 text-sm font-semibold text-white flex items-center justify-center gap-2 transition" style={{ background: 'linear-gradient(135deg, rgba(102,126,234,0.1), rgba(240,147,251,0.1))' }}>
+                <Image className="w-4 h-4" /> View Gallery · {b.photoCount} photos
               </button>
-            )}
-            {!booking.hasGallery && (
-              <div className="mt-2 py-2.5 flex items-center justify-center gap-2 rounded-lg border border-zinc-800 text-zinc-600 text-sm">
-                <Image className="w-4 h-4" /> Gallery delivered after session
+            ) : (
+              <div className="w-full py-2.5 rounded-xl border border-zinc-800 text-xs text-zinc-600 flex items-center justify-center gap-2">
+                <Image className="w-3.5 h-3.5" /> Gallery delivered after your session
               </div>
             )}
-          </div>
+          </Card>
         ))}
       </div>
     </div>
   );
 };
 
-// Client gallery view — receiving delivered photos
 const ClientGalleryView = ({ booking, onBack }) => {
   const [selected, setSelected] = useState([]);
-  const photos = Array(booking.photoCount).fill(0).map((_, i) => ({ id: i, seed: i }));
-  const visible = photos.slice(0, 18);
-  const toggle = (id) => setSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  const count = Math.min(booking.photoCount, 24);
+  const toggle = (i) => setSelected(p => p.includes(i) ? p.filter(x => x !== i) : [...p, i]);
   return (
     <div className="min-h-screen bg-zinc-950 pb-24">
-      <div className="bg-zinc-950/95 backdrop-blur border-b border-zinc-800 sticky top-0 z-40">
-        <div className="max-w-4xl mx-auto px-4 py-3">
-          <button onClick={onBack} className="flex items-center gap-2 text-zinc-400 hover:text-white mb-2"><ArrowLeft className="w-5 h-5" /> Back</button>
+      <div className="bg-zinc-950/95 backdrop-blur border-b border-zinc-800/60 sticky top-0 z-40">
+        <div className="max-w-2xl mx-auto px-4 py-3">
+          <button onClick={onBack} className="flex items-center gap-1.5 text-zinc-400 hover:text-white text-sm mb-2"><ArrowLeft className="w-4 h-4" /> Back</button>
           <div className="flex items-center justify-between">
-            <div><h1 className="text-xl font-bold text-white">{booking.photographer.name}</h1><p className="text-zinc-500 text-sm">{booking.type} · {booking.photoCount} photos · {booking.date}</p></div>
-            {selected.length > 0 && <span className="text-sm text-white bg-zinc-800 px-3 py-1 rounded-full">{selected.length} selected</span>}
+            <div>
+              <p className="text-white font-bold">{booking.photographer.name}</p>
+              <p className="text-zinc-500 text-xs">{booking.type} · {booking.date} · {booking.photoCount} photos</p>
+            </div>
+            {selected.length > 0 && <Pill color="purple">{selected.length} selected</Pill>}
           </div>
         </div>
       </div>
-      <div className="max-w-4xl mx-auto px-4 py-4">
-        <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
-          {['All Photos', 'Favorites', 'Portraits', 'Candid', 'Details'].map((tab, i) => (
-            <button key={tab} className={`px-3 py-1.5 rounded-full text-sm flex-shrink-0 border transition ${i === 0 ? 'bg-white text-black border-white' : 'text-zinc-400 border-zinc-700 hover:border-zinc-500'}`}>{tab}</button>
+      <div className="max-w-2xl mx-auto px-4 pt-3 pb-4">
+        <div className="flex gap-1.5 mb-3 overflow-x-auto pb-1">
+          {['All', 'Favorites', 'Portraits', 'Candid', 'Details'].map((tab, i) => (
+            <button key={tab} className={`px-3 py-1 rounded-full text-xs font-medium flex-shrink-0 border transition ${i === 0 ? 'bg-white text-black border-white' : 'text-zinc-400 border-zinc-700'}`}>{tab}</button>
           ))}
         </div>
-        <div className="grid grid-cols-3 gap-1">
-          {visible.map((photo) => (
-            <div key={photo.id} onClick={() => toggle(photo.id)} className="aspect-square relative cursor-pointer group">
-              <div className="w-full h-full rounded-sm" style={{ background: g(photo.seed) }} />
-              <div className={`absolute inset-0 rounded-sm transition ${selected.includes(photo.id) ? 'ring-2 ring-white' : 'ring-0'}`} />
-              {selected.includes(photo.id) && (
-                <div className="absolute top-1 right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center">
-                  <Check className="w-3 h-3 text-black" />
+        <div className="grid grid-cols-3 gap-0.5">
+          {Array(count).fill(0).map((_, i) => (
+            <div key={i} onClick={() => toggle(i)} className="aspect-square relative cursor-pointer">
+              <div className="w-full h-full" style={{ background: g(i) }} />
+              {selected.includes(i) && (
+                <div className="absolute inset-0 ring-2 ring-white ring-inset">
+                  <div className="absolute top-1.5 right-1.5 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-lg">
+                    <Check className="w-3 h-3 text-black" strokeWidth={3} />
+                  </div>
                 </div>
               )}
             </div>
           ))}
         </div>
-        {booking.photoCount > 18 && <p className="text-center text-zinc-600 text-sm mt-4">+{booking.photoCount - 18} more photos</p>}
+        {booking.photoCount > 24 && <p className="text-center text-zinc-600 text-xs mt-3">+{booking.photoCount - 24} more photos</p>}
       </div>
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-zinc-950/95 backdrop-blur border-t border-zinc-800">
-        <div className="max-w-4xl mx-auto flex gap-3">
-          <button className="flex-1 py-3 bg-white hover:bg-zinc-100 text-black font-semibold rounded-xl transition flex items-center justify-center gap-2">
-            Download All
-          </button>
-          <button className="flex-1 py-3 border border-zinc-700 hover:border-zinc-500 text-white font-semibold rounded-xl transition flex items-center justify-center gap-2">
-            Order Prints
-          </button>
+      <div className="fixed bottom-0 left-0 right-0 px-4 pb-6 pt-3 bg-gradient-to-t from-zinc-950 to-transparent">
+        <div className="max-w-2xl mx-auto flex gap-2.5">
+          <SecondaryButton className="flex-1">Download All</SecondaryButton>
+          <PrimaryButton className="flex-1">Order Prints</PrimaryButton>
         </div>
       </div>
     </div>
   );
 };
 
-// ─── PHOTOGRAPHER VIEW ────────────────────────────────────────────────────────
-
-const PhotographerBottomNav = ({ active, onNavigate }) => {
-  const items = [{ id: 'feed', icon: Home, label: 'Feed' }, { id: 'galleries', icon: Image, label: 'Galleries' }, { id: 'bookings', icon: Calendar, label: 'Bookings' }, { id: 'portfolio', icon: Grid, label: 'Portfolio' }, { id: 'account', icon: User, label: 'Account' }];
-  return (
-    <div className="fixed bottom-0 left-0 right-0 bg-black/95 backdrop-blur-lg border-t border-white/10 z-50">
-      <div className="max-w-lg mx-auto px-2 py-2 flex items-center justify-around">
-        {items.map(({ id, icon: Icon, label }) => (
-          <button key={id} onClick={() => onNavigate(id)} className={`flex flex-col items-center gap-1 py-2 px-3 rounded-lg transition ${active === id ? 'text-white' : 'text-zinc-500 hover:text-white'}`}>
-            <Icon className="w-5 h-5" /><span className="text-xs font-medium">{label}</span>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-};
+// ─── PHOTOGRAPHER SCREENS ─────────────────────────────────────────────────────
 
 const PhotographerFeed = ({ onViewProfile }) => (
   <div className="min-h-screen bg-black pb-20">
-    <div className="bg-black/50 backdrop-blur-lg border-b border-white/10 fixed top-0 left-0 right-0 z-40">
+    <div className="bg-black/60 backdrop-blur-xl border-b border-white/5 fixed top-0 left-0 right-0 z-40">
       <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-2"><Camera className="w-6 h-6 text-white" /><h1 className="text-lg font-bold text-white">Viewfinder</h1></div>
-        <div className="flex items-center gap-3"><span className="text-xs text-zinc-500 bg-zinc-900 px-2 py-1 rounded-full border border-zinc-800">Photographer View</span><Bell className="w-5 h-5 text-zinc-400" /></div>
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: PRIMARY }}><Camera className="w-4 h-4 text-white" /></div>
+          <span className="text-white font-bold tracking-tight">Viewfinder</span>
+        </div>
+        <Pill color="purple">Photographer</Pill>
       </div>
     </div>
-    <div className="max-w-4xl mx-auto pt-14">
+    <div className="pt-14">
       {photographers.map((photographer, pi) =>
         Array(2).fill(0).map((_, idx) => (
-          <div key={`${photographer.id}-${idx}`} className="relative w-full h-screen border-b border-gray-900">
-            <div className="w-full h-full" style={{ background: g(pi * 2 + idx) }} />
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent" />
-            <div className="absolute bottom-20 left-0 right-0 p-4 max-w-2xl">
-              <div className="flex items-center gap-3 mb-2">
-                <Avatar name={photographer.name} seed={photographer.id} size="sm" />
-                <div><p className="text-white font-bold">{photographer.name}</p><p className="text-white/70 text-xs">{photographer.specialty}</p></div>
-              </div>
-              <button onClick={() => onViewProfile(photographer)} className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm font-medium rounded-lg border border-white/20 transition">View Profile</button>
+          <div key={`${photographer.id}-${idx}`} className="relative w-full h-screen">
+            <div className="absolute inset-0" style={{ background: g(pi * 2 + idx) }} />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent" />
+            <div className="absolute top-6 left-4 right-4 flex items-center gap-2 bg-black/40 backdrop-blur-sm rounded-full px-3 py-1.5 self-start">
+              <Avatar name={photographer.name} seed={photographer.id} size="xs" />
+              <span className="text-white text-xs font-semibold">{photographer.name}</span>
+              <span className="text-white/50 text-xs">·</span>
+              <span className="text-white/70 text-xs">{photographer.specialty}</span>
+            </div>
+            <div className="absolute bottom-24 left-4 right-4">
+              <button onClick={() => onViewProfile(photographer)} className="px-4 py-2 bg-white/10 backdrop-blur-sm text-white text-sm font-medium rounded-xl border border-white/20 hover:bg-white/20 transition">
+                View Profile
+              </button>
             </div>
           </div>
         ))
@@ -438,34 +510,27 @@ const PhotographerFeed = ({ onViewProfile }) => (
 
 const PhotographerGalleries = ({ onOpenGallery, onNewGallery }) => (
   <div className="min-h-screen bg-zinc-950 pb-20">
-    <div className="bg-zinc-950/95 backdrop-blur border-b border-zinc-800 sticky top-0 z-40">
-      <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
-        <div><h1 className="text-2xl font-bold text-white">Galleries</h1><p className="text-zinc-500 text-sm">{mockGalleries.length} sessions</p></div>
-        <button onClick={onNewGallery} className="flex items-center gap-2 px-4 py-2 rounded-xl text-white text-sm font-semibold" style={{ background: g(0) }}>
-          <Plus className="w-4 h-4" /> New Gallery
-        </button>
-      </div>
-    </div>
-    <div className="max-w-3xl mx-auto px-4 py-6 space-y-4">
+    <PageHeader
+      title="Galleries"
+      subtitle={`${mockGalleries.length} sessions`}
+      action={<PrimaryButton onClick={onNewGallery} className="py-2 px-3.5 text-sm rounded-xl" icon={Plus}>New</PrimaryButton>}
+    />
+    <div className="max-w-2xl mx-auto px-4 py-5 space-y-3">
       {mockGalleries.map((gallery) => (
-        <div key={gallery.id} onClick={() => onOpenGallery(gallery)} className="bg-zinc-900 border border-zinc-800 hover:border-zinc-600 rounded-xl overflow-hidden cursor-pointer transition">
-          <div className="flex">
-            <div className="w-24 h-24 flex-shrink-0" style={{ background: g(gallery.coverSeed) }} />
-            <div className="flex-1 p-4">
-              <div className="flex items-start justify-between mb-1">
-                <h3 className="text-white font-bold">{gallery.client}</h3>
-                <span className={`text-xs px-2 py-0.5 rounded-full border ${gallery.shared ? 'text-green-400 bg-green-500/10 border-green-500/20' : 'text-zinc-500 bg-zinc-800 border-zinc-700'}`}>
-                  {gallery.shared ? 'Shared' : 'Draft'}
-                </span>
-              </div>
-              <p className="text-zinc-500 text-sm mb-2">{gallery.date}</p>
-              <div className="flex items-center gap-4 text-xs text-zinc-400">
-                <span className="flex items-center gap-1"><Image className="w-3 h-3" /> {gallery.photos} photos</span>
-                {gallery.shared && <span className="flex items-center gap-1"><Eye className="w-3 h-3" /> Client notified</span>}
-              </div>
+        <Card key={gallery.id} onClick={() => onOpenGallery(gallery)} className="flex overflow-hidden">
+          <div className="w-20 h-20 flex-shrink-0" style={{ background: g(gallery.coverSeed) }} />
+          <div className="flex-1 p-3.5 min-w-0">
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-white font-bold truncate">{gallery.client}</p>
+              <Pill color={gallery.shared ? 'green' : 'zinc'}>{gallery.shared ? 'Shared' : 'Draft'}</Pill>
+            </div>
+            <p className="text-zinc-500 text-xs mb-2">{gallery.date}</p>
+            <div className="flex items-center gap-3 text-xs text-zinc-500">
+              <span className="flex items-center gap-1"><Image className="w-3 h-3" />{gallery.photos} photos</span>
+              {gallery.shared && <span className="flex items-center gap-1 text-green-500"><Eye className="w-3 h-3" />Client notified</span>}
             </div>
           </div>
-        </div>
+        </Card>
       ))}
     </div>
   </div>
@@ -473,61 +538,56 @@ const PhotographerGalleries = ({ onOpenGallery, onNewGallery }) => (
 
 const GalleryDetail = ({ gallery, onBack }) => {
   const [selectedForFeed, setSelectedForFeed] = useState([0, 3, 7]);
-  const photos = Array(Math.min(gallery.photos, 24)).fill(0).map((_, i) => i);
-  const toggle = (i) => setSelectedForFeed(prev => prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i]);
+  const count = Math.min(gallery.photos, 24);
+  const toggle = (i) => setSelectedForFeed(p => p.includes(i) ? p.filter(x => x !== i) : [...p, i]);
   return (
     <div className="min-h-screen bg-zinc-950 pb-24">
-      <div className="bg-zinc-950/95 backdrop-blur border-b border-zinc-800 sticky top-0 z-40">
-        <div className="max-w-4xl mx-auto px-4 py-3">
-          <button onClick={onBack} className="flex items-center gap-2 text-zinc-400 hover:text-white mb-2"><ArrowLeft className="w-5 h-5" /> Galleries</button>
+      <div className="bg-zinc-950/95 backdrop-blur border-b border-zinc-800/60 sticky top-0 z-40">
+        <div className="max-w-2xl mx-auto px-4 py-3">
+          <button onClick={onBack} className="flex items-center gap-1.5 text-zinc-400 hover:text-white text-sm mb-2"><ArrowLeft className="w-4 h-4" /> Galleries</button>
           <div className="flex items-center justify-between">
-            <div><h1 className="text-xl font-bold text-white">{gallery.client}</h1><p className="text-zinc-500 text-sm">{gallery.photos} photos · {gallery.date}</p></div>
-            <div className="flex gap-2">
-              <button className="px-3 py-1.5 text-sm text-zinc-400 border border-zinc-700 rounded-lg hover:border-zinc-500 transition">Share with Client</button>
+            <div>
+              <p className="text-white font-bold">{gallery.client}</p>
+              <p className="text-zinc-500 text-xs">{gallery.photos} photos · {gallery.date}</p>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Post to Feed banner */}
-      <div className="max-w-4xl mx-auto px-4 pt-4">
-        <div className="rounded-xl p-4 mb-4 border border-zinc-700" style={{ background: 'linear-gradient(135deg, rgba(102,126,234,0.12), rgba(240,147,251,0.12))' }}>
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-white font-semibold text-sm">Post to Your Feed</p>
+      <div className="max-w-2xl mx-auto px-4 pt-4">
+        {/* Post to feed banner */}
+        <div className="rounded-2xl p-4 mb-4 border border-violet-500/20" style={{ background: 'linear-gradient(135deg, rgba(102,126,234,0.08), rgba(240,147,251,0.08))' }}>
+          <div className="flex items-center justify-between mb-1.5">
+            <p className="text-white font-semibold text-sm">Post to Discovery Feed</p>
             <span className="text-xs text-zinc-400">{selectedForFeed.length} selected</span>
           </div>
-          <p className="text-zinc-400 text-xs mb-3">Tap photos below to select your best shots. They'll appear in client discovery feeds.</p>
-          <button className="w-full py-2 rounded-lg text-white text-sm font-semibold transition" style={{ background: selectedForFeed.length > 0 ? g(0) : undefined, backgroundColor: selectedForFeed.length === 0 ? '#3f3f46' : undefined }}>
-            {selectedForFeed.length > 0 ? `Publish ${selectedForFeed.length} Photos to Feed` : 'Select photos to publish'}
-          </button>
+          <p className="text-zinc-500 text-xs mb-3">Selected photos appear in client discovery feeds and drive bookings.</p>
+          <PrimaryButton className={`w-full py-2.5 rounded-xl text-sm ${selectedForFeed.length === 0 ? 'opacity-40' : ''}`}>
+            {selectedForFeed.length > 0 ? `Publish ${selectedForFeed.length} Photos` : 'Select photos below'}
+          </PrimaryButton>
         </div>
-      </div>
-
-      <div className="max-w-4xl mx-auto px-4">
-        <p className="text-zinc-500 text-xs mb-3">Tap to select for feed · All photos shared with client</p>
-        <div className="grid grid-cols-3 gap-1">
-          {photos.map((i) => (
+        <p className="text-zinc-600 text-xs mb-2">Tap to select for feed · All photos shared with client</p>
+        <div className="grid grid-cols-3 gap-0.5">
+          {Array(count).fill(0).map((_, i) => (
             <div key={i} onClick={() => toggle(i)} className="aspect-square relative cursor-pointer">
-              <div className="w-full h-full rounded-sm" style={{ background: g(gallery.coverSeed + i) }} />
-              {selectedForFeed.includes(i) ? (
-                <div className="absolute inset-0 rounded-sm ring-2 ring-white">
-                  <div className="absolute top-1 right-1 w-5 h-5 rounded-full bg-white flex items-center justify-center">
-                    <Check className="w-3 h-3 text-black" />
+              <div className="w-full h-full" style={{ background: g(gallery.coverSeed + i) }} />
+              {selectedForFeed.includes(i) && (
+                <div className="absolute inset-0 ring-2 ring-white ring-inset">
+                  <div className="absolute top-1.5 right-1.5 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow">
+                    <Check className="w-3 h-3 text-black" strokeWidth={3} />
                   </div>
-                  <div className="absolute bottom-1 left-1 text-white text-xs font-bold bg-black/50 px-1 rounded">Feed</div>
+                  <div className="absolute bottom-1.5 left-1.5">
+                    <span className="text-white text-xs font-bold bg-black/60 px-1.5 py-0.5 rounded-md">Feed</span>
+                  </div>
                 </div>
-              ) : (
-                <div className="absolute inset-0 rounded-sm ring-0 opacity-0 hover:opacity-100 hover:ring-1 hover:ring-zinc-400 transition" />
               )}
             </div>
           ))}
         </div>
       </div>
-
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-zinc-950/95 backdrop-blur border-t border-zinc-800">
-        <div className="max-w-4xl mx-auto flex gap-3">
-          <button className="flex-1 py-3 border border-zinc-700 text-white font-semibold rounded-xl text-sm hover:border-zinc-500 transition">Download All</button>
-          <button className="flex-1 py-3 text-white font-semibold rounded-xl text-sm transition" style={{ background: g(0) }}>Share with Client</button>
+      <div className="fixed bottom-0 left-0 right-0 px-4 pb-6 pt-3 bg-gradient-to-t from-zinc-950 to-transparent">
+        <div className="max-w-2xl mx-auto flex gap-2.5">
+          <SecondaryButton className="flex-1 text-sm">Download All</SecondaryButton>
+          <PrimaryButton className="flex-1 text-sm">Share with Client</PrimaryButton>
         </div>
       </div>
     </div>
@@ -536,40 +596,41 @@ const GalleryDetail = ({ gallery, onBack }) => {
 
 const NewGallery = ({ onBack }) => (
   <div className="min-h-screen bg-zinc-950 pb-20">
-    <div className="bg-zinc-950/95 backdrop-blur border-b border-zinc-800 sticky top-0 z-40">
-      <div className="max-w-3xl mx-auto px-4 py-3">
-        <button onClick={onBack} className="flex items-center gap-2 text-zinc-400 hover:text-white mb-1"><ArrowLeft className="w-5 h-5" /> Galleries</button>
+    <div className="bg-zinc-950/95 backdrop-blur border-b border-zinc-800/60 sticky top-0 z-40">
+      <div className="max-w-2xl mx-auto px-4 py-3">
+        <button onClick={onBack} className="flex items-center gap-1.5 text-zinc-400 hover:text-white text-sm mb-1"><ArrowLeft className="w-4 h-4" /> Galleries</button>
         <h1 className="text-xl font-bold text-white">New Gallery</h1>
       </div>
     </div>
-    <div className="max-w-3xl mx-auto px-4 py-6 space-y-5">
+    <div className="max-w-2xl mx-auto px-4 py-5 space-y-4">
+      {[{ label: 'Client Name', placeholder: 'e.g. Smith Wedding', type: 'text' }, { label: 'Session Date', placeholder: '', type: 'date' }].map(({ label, placeholder, type }) => (
+        <div key={label}>
+          <label className="block text-sm font-medium text-zinc-300 mb-1.5">{label}</label>
+          <input type={type} placeholder={placeholder} className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-600 transition text-sm" />
+        </div>
+      ))}
       <div>
-        <label className="block text-sm font-medium text-zinc-300 mb-2">Client Name</label>
-        <input className="w-full px-4 py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-500" placeholder="e.g. Smith Wedding" />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-zinc-300 mb-2">Session Date</label>
-        <input type="date" className="w-full px-4 py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:outline-none focus:border-zinc-500" />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-zinc-300 mb-2">Session Type</label>
-        <select className="w-full px-4 py-3 bg-zinc-900 border border-zinc-700 rounded-xl text-white focus:outline-none focus:border-zinc-500">
-          <option>Wedding</option><option>Engagement</option><option>Family</option><option>Portrait</option><option>Event</option><option>Commercial</option>
+        <label className="block text-sm font-medium text-zinc-300 mb-1.5">Session Type</label>
+        <select className="w-full px-4 py-3 bg-zinc-900 border border-zinc-800 rounded-xl text-white focus:outline-none text-sm">
+          {['Wedding', 'Engagement', 'Family', 'Portrait', 'Event', 'Commercial'].map(o => <option key={o}>{o}</option>)}
         </select>
       </div>
       <div>
-        <label className="block text-sm font-medium text-zinc-300 mb-2">Upload Photos</label>
-        <div className="border-2 border-dashed border-zinc-700 rounded-xl p-10 text-center hover:border-zinc-500 transition cursor-pointer">
-          <Upload className="w-10 h-10 text-zinc-600 mx-auto mb-3" />
-          <p className="text-white font-medium mb-1">Drag photos here</p>
-          <p className="text-zinc-500 text-sm">or tap to browse · JPG, PNG, RAW</p>
+        <label className="block text-sm font-medium text-zinc-300 mb-1.5">Upload Photos</label>
+        <div className="border-2 border-dashed border-zinc-800 rounded-2xl p-10 text-center hover:border-zinc-600 transition cursor-pointer">
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3 bg-zinc-800"><Upload className="w-6 h-6 text-zinc-500" /></div>
+          <p className="text-white font-semibold text-sm mb-1">Drag photos here</p>
+          <p className="text-zinc-600 text-xs">or tap to browse · JPG, PNG, RAW</p>
         </div>
       </div>
-      <div className="flex items-center justify-between p-4 bg-zinc-900 rounded-xl border border-zinc-800">
-        <div><p className="text-white font-medium text-sm">Client Watermark</p><p className="text-zinc-500 text-xs">Preview photos have your logo until delivered</p></div>
-        <div className="w-10 h-6 bg-zinc-700 rounded-full relative cursor-pointer"><div className="w-4 h-4 bg-white rounded-full absolute top-1 left-1 transition" /></div>
-      </div>
-      <button className="w-full py-4 rounded-xl text-white font-bold text-lg" style={{ background: g(0) }}>Create Gallery</button>
+      <Card className="p-4 flex items-center justify-between">
+        <div>
+          <p className="text-white font-medium text-sm">Client Watermark</p>
+          <p className="text-zinc-500 text-xs mt-0.5">Preview photos include your logo until delivered</p>
+        </div>
+        <div className="w-11 h-6 rounded-full bg-zinc-700 relative cursor-pointer"><div className="w-5 h-5 bg-white rounded-full absolute top-0.5 left-0.5 shadow" /></div>
+      </Card>
+      <PrimaryButton className="w-full text-base py-4 rounded-2xl">Create Gallery</PrimaryButton>
     </div>
   </div>
 );
@@ -581,31 +642,24 @@ const PhotographerBookings = () => {
     { id: 3, client: "David Park", type: "Headshots", date: "Jan 10, 2026", amount: "$250", status: "completed" },
     { id: 4, client: "Ashley & Mike", type: "Engagement", date: "Mar 5, 2026", amount: "$450", status: "pending" },
   ];
-  const statusStyles = { upcoming: 'text-blue-400 bg-blue-500/10 border-blue-500/20', completed: 'text-green-400 bg-green-500/10 border-green-500/20', pending: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20' };
+  const statusColor = { upcoming: 'blue', completed: 'green', pending: 'yellow' };
   return (
     <div className="min-h-screen bg-zinc-950 pb-20">
-      <div className="bg-zinc-950/95 backdrop-blur border-b border-zinc-800 sticky top-0 z-40">
-        <div className="max-w-3xl mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-white mb-1">Bookings</h1>
-          <div className="flex gap-4 text-sm">
-            <span className="text-white font-semibold">$4,300 <span className="text-zinc-500 font-normal">this month</span></span>
-            <span className="text-zinc-500">4 sessions</span>
-          </div>
-        </div>
-      </div>
-      <div className="max-w-3xl mx-auto px-4 py-6 space-y-3">
+      <PageHeader title="Bookings" subtitle="$4,300 earned this month" />
+      <div className="max-w-2xl mx-auto px-4 py-5 space-y-2.5">
         {bookings.map((b, i) => (
-          <div key={b.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex items-center gap-4">
+          <Card key={b.id} className="p-4 flex items-center gap-3">
             <Avatar name={b.client} seed={i + 3} size="md" />
             <div className="flex-1 min-w-0">
-              <p className="text-white font-semibold truncate">{b.client}</p>
-              <p className="text-zinc-400 text-sm">{b.type} · {b.date}</p>
+              <p className="text-white font-bold truncate">{b.client}</p>
+              <p className="text-zinc-400 text-sm">{b.type}</p>
+              <p className="text-zinc-600 text-xs">{b.date}</p>
             </div>
             <div className="text-right flex-shrink-0">
-              <p className="text-white font-bold text-sm">{b.amount}</p>
-              <span className={`text-xs px-2 py-0.5 rounded-full border ${statusStyles[b.status]}`}>{b.status}</span>
+              <p className="text-white font-black">{b.amount}</p>
+              <Pill color={statusColor[b.status]}>{b.status}</Pill>
             </div>
-          </div>
+          </Card>
         ))}
       </div>
     </div>
@@ -614,38 +668,31 @@ const PhotographerBookings = () => {
 
 const PhotographerPortfolio = () => (
   <div className="min-h-screen bg-zinc-950 pb-20">
-    <div className="bg-zinc-950/95 backdrop-blur border-b border-zinc-800 sticky top-0 z-40">
-      <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">My Portfolio</h1>
-        <button className="text-sm text-zinc-400 hover:text-white border border-zinc-700 px-3 py-1.5 rounded-lg transition">Edit Profile</button>
-      </div>
-    </div>
-    <div className="max-w-3xl mx-auto px-4 py-6">
+    <PageHeader title="My Portfolio" action={<button className="text-xs text-zinc-400 border border-zinc-700 px-3 py-1.5 rounded-lg hover:border-zinc-500 transition">Edit Profile</button>} />
+    <div className="max-w-2xl mx-auto px-4 py-5">
       <div className="flex items-start gap-4 mb-6">
         <Avatar name="Sarah Mitchell" seed={0} size="xl" />
         <div className="flex-1">
-          <h2 className="text-2xl font-bold text-white mb-1">Sarah Mitchell</h2>
-          <p className="text-zinc-400 text-sm mb-1">Wedding & Engagement</p>
-          <p className="text-zinc-500 text-sm flex items-center gap-1 mb-3"><MapPin className="w-4 h-4" /> Downtown Charleston</p>
-          <div className="flex gap-4 text-sm">
-            <span><span className="text-white font-bold">127</span> <span className="text-zinc-500">reviews</span></span>
-            <span><span className="text-white font-bold">4.9★</span> <span className="text-zinc-500">rating</span></span>
+          <h2 className="text-2xl font-black text-white tracking-tight mb-1">Sarah Mitchell</h2>
+          <p className="text-zinc-400 text-sm mb-2">Wedding & Engagement · Isle of Palms</p>
+          <div className="flex gap-4">
+            <span className="text-sm"><span className="text-white font-bold">127</span> <span className="text-zinc-500">reviews</span></span>
+            <span className="text-sm"><span className="text-white font-bold">4.9★</span></span>
+            <span className="text-sm"><span className="text-white font-bold">$3.2k</span> <span className="text-zinc-500">avg booking</span></span>
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-3 gap-1 mb-6">
-        {gradients.map((grad, i) => <div key={i} className="aspect-square rounded-sm" style={{ background: grad }} />)}
+      <div className="grid grid-cols-3 gap-0.5 mb-6">
+        {gradients.map((grad, i) => <div key={i} className="aspect-square" style={{ background: grad }} />)}
       </div>
-      <div>
-        <h3 className="text-lg font-bold text-white mb-3">Packages</h3>
-        <div className="space-y-3">
-          {photographers[0].packages.map((pkg, i) => (
-            <div key={i} className="flex items-center justify-between p-4 bg-zinc-900 rounded-xl border border-zinc-800">
-              <div><p className="text-white font-semibold">{pkg.name}</p><p className="text-zinc-500 text-sm">{pkg.details}</p></div>
-              <p className="text-rose-400 font-bold">{pkg.price}</p>
-            </div>
-          ))}
-        </div>
+      <SectionTitle>Packages</SectionTitle>
+      <div className="space-y-2.5">
+        {photographers[0].packages.map((pkg, i) => (
+          <Card key={i} className="p-4 flex items-center justify-between">
+            <div><p className="text-white font-bold">{pkg.name}</p><p className="text-zinc-500 text-xs mt-0.5">{pkg.details}</p></div>
+            <p className="text-white font-black text-lg">{pkg.price}</p>
+          </Card>
+        ))}
       </div>
     </div>
   </div>
@@ -653,22 +700,36 @@ const PhotographerPortfolio = () => (
 
 const PhotographerAccount = () => (
   <div className="min-h-screen bg-zinc-950 pb-20">
-    <div className="bg-zinc-950/95 backdrop-blur border-b border-zinc-800 sticky top-0 z-40">
-      <div className="max-w-3xl mx-auto px-4 py-4"><h1 className="text-2xl font-bold text-white">Account</h1></div>
-    </div>
-    <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-        <p className="text-zinc-500 text-xs mb-1">This month</p>
-        <p className="text-3xl font-bold text-white mb-1">$3,870 <span className="text-lg text-zinc-400 font-normal">earned</span></p>
-        <p className="text-zinc-500 text-sm">After Viewfinder's 10% · 9 bookings</p>
+    <PageHeader title="Account" />
+    <div className="max-w-2xl mx-auto px-4 py-5 space-y-5">
+      {/* Earnings card */}
+      <div className="rounded-2xl p-5 relative overflow-hidden" style={{ background: PRIMARY }}>
+        <div className="absolute inset-0 opacity-30" style={{ background: 'radial-gradient(circle at 80% 20%, white, transparent)' }} />
+        <p className="text-white/70 text-sm mb-1 relative">This month's earnings</p>
+        <p className="text-4xl font-black text-white relative mb-1">$3,870</p>
+        <p className="text-white/60 text-sm relative">After Viewfinder's 10% · 9 sessions</p>
       </div>
+      {/* Stats row */}
+      <div className="grid grid-cols-3 gap-2.5">
+        {[{ val: '9', label: 'Bookings' }, { val: '4.9★', label: 'Rating' }, { val: '127', label: 'Reviews' }].map(({ val, label }) => (
+          <Card key={label} className="p-3.5 text-center">
+            <p className="text-white font-black text-xl">{val}</p>
+            <p className="text-zinc-500 text-xs mt-0.5">{label}</p>
+          </Card>
+        ))}
+      </div>
+      {/* Settings list */}
       <div className="space-y-2">
-        {[{ icon: DollarSign, label: 'Stripe Payouts', sub: 'Connected · Weekly deposits' }, { icon: Bell, label: 'Notifications', sub: 'Booking requests, messages' }, { icon: Settings, label: 'Account Settings', sub: 'Email, password, availability' }].map(({ icon: Icon, label, sub }) => (
-          <button key={label} className="w-full flex items-center gap-4 p-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl transition text-left">
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-zinc-800"><Icon className="w-5 h-5 text-zinc-400" /></div>
-            <div className="flex-1"><p className="text-white font-medium">{label}</p><p className="text-zinc-500 text-sm">{sub}</p></div>
-            <ChevronRight className="w-5 h-5 text-zinc-600" />
-          </button>
+        {[
+          { icon: DollarSign, label: 'Stripe Payouts', sub: 'Connected · Weekly deposits', color: 'green' },
+          { icon: Bell, label: 'Notifications', sub: 'Booking requests, messages', color: 'blue' },
+          { icon: Settings, label: 'Account Settings', sub: 'Email, password, availability', color: 'zinc' },
+        ].map(({ icon: Icon, label, sub, color }) => (
+          <Card key={label} onClick={() => {}} className="p-4 flex items-center gap-3.5">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 bg-zinc-800"><Icon className="w-4 h-4 text-zinc-400" /></div>
+            <div className="flex-1"><p className="text-white font-semibold text-sm">{label}</p><p className="text-zinc-500 text-xs">{sub}</p></div>
+            <ChevronRight className="w-4 h-4 text-zinc-600 flex-shrink-0" />
+          </Card>
         ))}
       </div>
     </div>
@@ -685,44 +746,41 @@ export default function App() {
   const [selectedGallery, setSelectedGallery] = useState(null);
   const [selectedBooking, setSelectedBooking] = useState(null);
 
-  const handleRoleSelect = (r) => { setRole(r); setActiveTab('feed'); setScreen('app'); };
-  const handleViewProfile = (p) => { setSelectedPhotographer(p); setScreen('profile'); };
-  const handleBook = (p) => { setSelectedPhotographer(p); setScreen('booking'); };
-  const handleBackToApp = () => { setScreen('app'); setSelectedPhotographer(null); setSelectedGallery(null); setSelectedBooking(null); };
-  const handleOpenGallery = (gallery) => { setSelectedGallery(gallery); setScreen('galleryDetail'); };
-  const handleViewClientGallery = (booking) => { setSelectedBooking(booking); setScreen('clientGallery'); };
+  const go = (s) => setScreen(s);
+  const back = () => { setScreen('app'); setSelectedPhotographer(null); setSelectedGallery(null); setSelectedBooking(null); };
 
-  // Splash & role selection
-  if (screen === 'splash') return <SplashScreen onContinue={() => setScreen('role')} />;
+  const handleRoleSelect = (r) => { setRole(r); setActiveTab('feed'); go('app'); };
+  const handleViewProfile = (p) => { setSelectedPhotographer(p); go('profile'); };
+  const handleBook = (p) => { setSelectedPhotographer(p); go('booking'); };
+  const handleOpenGallery = (g) => { setSelectedGallery(g); go('galleryDetail'); };
+  const handleViewClientGallery = (b) => { setSelectedBooking(b); go('clientGallery'); };
+
+  if (screen === 'splash') return <SplashScreen onContinue={() => go('role')} />;
   if (screen === 'role') return <RoleSelection onSelectRole={handleRoleSelect} />;
+  if (screen === 'profile' && selectedPhotographer) return <PhotographerProfileScreen photographer={selectedPhotographer} onBack={back} onBook={handleBook} />;
+  if (screen === 'booking') return <BookingConfirmation onBack={back} />;
+  if (screen === 'galleryDetail' && selectedGallery) return <GalleryDetail gallery={selectedGallery} onBack={back} />;
+  if (screen === 'newGallery') return <NewGallery onBack={back} />;
+  if (screen === 'clientGallery' && selectedBooking) return <ClientGalleryView booking={selectedBooking} onBack={back} />;
 
-  // Shared overlay screens
-  if (screen === 'profile' && selectedPhotographer) return <PhotographerProfileCard photographer={selectedPhotographer} onBack={handleBackToApp} onBook={handleBook} />;
-  if (screen === 'booking') return <BookingConfirmation onBack={handleBackToApp} />;
-  if (screen === 'galleryDetail' && selectedGallery) return <GalleryDetail gallery={selectedGallery} onBack={handleBackToApp} />;
-  if (screen === 'newGallery') return <NewGallery onBack={handleBackToApp} />;
-  if (screen === 'clientGallery' && selectedBooking) return <ClientGalleryView booking={selectedBooking} onBack={handleBackToApp} />;
-
-  // CLIENT APP
   if (role === 'client') return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-zinc-950">
       {activeTab === 'feed' && <ClientFeed onViewProfile={handleViewProfile} />}
       {activeTab === 'find' && <ClientFind onViewProfile={handleViewProfile} />}
       {activeTab === 'saved' && <ClientSaved onViewProfile={handleViewProfile} />}
       {activeTab === 'bookings' && <ClientBookings onViewGallery={handleViewClientGallery} />}
-      <ClientBottomNav active={activeTab} onNavigate={setActiveTab} />
+      <ClientNav active={activeTab} onNavigate={setActiveTab} />
     </div>
   );
 
-  // PHOTOGRAPHER APP
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-zinc-950">
       {activeTab === 'feed' && <PhotographerFeed onViewProfile={handleViewProfile} />}
-      {activeTab === 'galleries' && <PhotographerGalleries onOpenGallery={handleOpenGallery} onNewGallery={() => setScreen('newGallery')} />}
+      {activeTab === 'galleries' && <PhotographerGalleries onOpenGallery={handleOpenGallery} onNewGallery={() => go('newGallery')} />}
       {activeTab === 'bookings' && <PhotographerBookings />}
       {activeTab === 'portfolio' && <PhotographerPortfolio />}
       {activeTab === 'account' && <PhotographerAccount />}
-      <PhotographerBottomNav active={activeTab} onNavigate={setActiveTab} />
+      <PhotographerNav active={activeTab} onNavigate={setActiveTab} />
     </div>
   );
 }
