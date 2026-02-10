@@ -5,24 +5,39 @@ import { Heart, MapPin, Camera, Calendar, Star, Filter, Search, X, MessageCircle
 
 // ─── DESIGN TOKENS ───────────────────────────────────────────────────────────
 
+// Brand: Dark Studio — monochrome base + ice blue accent
+const ACCENT = '#4FACFE';
+const ACCENT_DIM = 'rgba(79,172,254,0.12)';
+const ACCENT_BORDER = 'rgba(79,172,254,0.25)';
+const PRIMARY = `linear-gradient(135deg, ${ACCENT} 0%, #00d4ff 100%)`;
+
+// Portfolio stand-ins — dark monochrome tones (real photos replace these)
 const gradients = [
-  'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-  'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-  'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-  'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-  'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-  'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
+  'linear-gradient(160deg, #1e293b 0%, #0f172a 100%)',
+  'linear-gradient(160deg, #1a1a2e 0%, #09090b 100%)',
+  'linear-gradient(160deg, #27272a 0%, #18181b 100%)',
+  'linear-gradient(160deg, #0f3460 0%, #1a1a2e 100%)',
+  'linear-gradient(160deg, #1c1c2e 0%, #111827 100%)',
+  'linear-gradient(160deg, #18181b 0%, #09090b 100%)',
 ];
 const g = (seed) => gradients[Math.abs(seed) % gradients.length];
-const PRIMARY = g(0); // purple-blue — used for all primary CTAs
 
 // ─── BASE COMPONENTS ─────────────────────────────────────────────────────────
 
 const Avatar = ({ name, seed = 0, size = 'md' }) => {
   const initials = name ? name.split(' ').map(n => n[0]).join('') : '?';
   const sizes = { xs: 'w-7 h-7 text-xs', sm: 'w-9 h-9 text-xs', md: 'w-12 h-12 text-sm', lg: 'w-16 h-16 text-base', xl: 'w-20 h-20 text-xl' };
+  // Subtle variation on the accent so avatars feel distinct but on-brand
+  const avatarBgs = [
+    `linear-gradient(135deg, ${ACCENT} 0%, #00d4ff 100%)`,
+    'linear-gradient(135deg, #2d5a8e 0%, #1e3a5f 100%)',
+    'linear-gradient(135deg, #3a3a4a 0%, #27272a 100%)',
+    'linear-gradient(135deg, #1e4080 0%, #0f2547 100%)',
+    `linear-gradient(135deg, #0ea5e9 0%, ${ACCENT} 100%)`,
+    'linear-gradient(135deg, #334155 0%, #1e293b 100%)',
+  ];
   return (
-    <div className={`${sizes[size]} rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 ring-2 ring-black`} style={{ background: g(seed) }}>
+    <div className={`${sizes[size]} rounded-full flex items-center justify-center text-white font-bold flex-shrink-0 ring-2 ring-zinc-950`} style={{ background: avatarBgs[Math.abs(seed) % avatarBgs.length] }}>
       {initials}
     </div>
   );
@@ -32,11 +47,12 @@ const Pill = ({ children, color = 'zinc' }) => {
   const colors = {
     zinc: 'bg-zinc-800 text-zinc-300 border-zinc-700',
     green: 'bg-green-500/10 text-green-400 border-green-500/20',
-    blue: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+    blue: 'text-sky-300 border-sky-400/25',
     yellow: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
-    purple: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
+    purple: 'text-sky-300 border-sky-400/25',
   };
-  return <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${colors[color]}`}>{children}</span>;
+  const inlineStyle = (color === 'blue' || color === 'purple') ? { background: ACCENT_DIM } : {};
+  return <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${colors[color]}`} style={inlineStyle}>{children}</span>;
 };
 
 const PrimaryButton = ({ children, onClick, className = '', icon: Icon }) => (
@@ -44,6 +60,27 @@ const PrimaryButton = ({ children, onClick, className = '', icon: Icon }) => (
     {Icon && <Icon className="w-4 h-4" />}{children}
   </button>
 );
+
+// Viewfinder corner-bracket logo mark
+const ViewfinderMark = ({ size = 20, color = ACCENT }) => (
+  <svg width={size} height={size} viewBox="0 0 20 20" fill="none">
+    <path d="M1 5V2h4" stroke={color} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M15 2h4v3" stroke={color} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M19 15v3h-4" stroke={color} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M5 18H1v-3" stroke={color} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
+    <circle cx="10" cy="10" r="2.5" stroke={color} strokeWidth="1.5"/>
+  </svg>
+);
+
+const Logo = ({ size = 'md' }) => {
+  const cfg = { sm: [16, 'text-sm'], md: [20, 'text-lg'], lg: [26, 'text-2xl'] }[size];
+  return (
+    <div className="flex items-center gap-2">
+      <ViewfinderMark size={cfg[0]} />
+      <span className={`text-white font-black ${cfg[1]}`} style={{ letterSpacing: '-0.03em' }}>viewfinder</span>
+    </div>
+  );
+};
 
 const SecondaryButton = ({ children, onClick, className = '', icon: Icon }) => (
   <button onClick={onClick} className={`flex items-center justify-center gap-2 py-3 px-6 rounded-xl text-white font-semibold border border-zinc-700 hover:border-zinc-500 bg-zinc-900 transition active:scale-95 ${className}`}>
@@ -124,13 +161,12 @@ const PhotographerNav = ({ active, onNavigate }) => (
 
 const SplashScreen = ({ onContinue }) => (
   <div className="min-h-screen bg-black flex flex-col relative overflow-hidden">
-    <div className="absolute -top-32 -left-32 w-80 h-80 rounded-full opacity-25" style={{ background: 'radial-gradient(circle, #667eea, transparent)' }} />
-    <div className="absolute -bottom-32 -right-32 w-80 h-80 rounded-full opacity-25" style={{ background: 'radial-gradient(circle, #f093fb, transparent)' }} />
-    <div className="absolute top-1/3 right-8 w-48 h-48 rounded-full opacity-10" style={{ background: 'radial-gradient(circle, #4facfe, transparent)' }} />
+    <div className="absolute -top-32 -left-32 w-80 h-80 rounded-full opacity-25" style={{ background: `radial-gradient(circle, ${ACCENT}, transparent)` }} />
+    <div className="absolute -bottom-32 -right-32 w-80 h-80 rounded-full opacity-15" style={{ background: 'radial-gradient(circle, #00d4ff, transparent)' }} />
+    <div className="absolute top-1/3 right-8 w-48 h-48 rounded-full opacity-10" style={{ background: `radial-gradient(circle, ${ACCENT}, transparent)` }} />
     <div className="relative flex flex-col flex-1 px-7 pt-16 pb-10">
-      <div className="flex items-center gap-2.5 mb-14">
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center shadow-lg" style={{ background: PRIMARY }}><Camera className="w-5 h-5 text-white" /></div>
-        <span className="text-white text-xl font-bold tracking-tight">Viewfinder</span>
+      <div className="mb-14">
+        <Logo size="md" />
       </div>
       <div className="mb-12">
         <h1 className="text-[52px] font-black text-white leading-[1.05] mb-5 tracking-tight">
@@ -161,9 +197,8 @@ const SplashScreen = ({ onContinue }) => (
 
 const RoleSelection = ({ onSelectRole }) => (
   <div className="min-h-screen bg-black flex flex-col px-6 py-12">
-    <div className="flex items-center gap-2.5 mb-10">
-      <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: PRIMARY }}><Camera className="w-4 h-4 text-white" /></div>
-      <span className="text-white font-bold">Viewfinder</span>
+    <div className="mb-10">
+      <Logo size="sm" />
     </div>
     <div className="mb-8">
       <h2 className="text-3xl font-black text-white tracking-tight mb-2">How will you use<br />Viewfinder?</h2>
@@ -279,8 +314,7 @@ const ClientFeed = ({ onViewProfile }) => (
     <div className="bg-black/60 backdrop-blur-xl border-b border-white/5 fixed top-0 left-0 right-0 z-40">
       <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: PRIMARY }}><Camera className="w-4 h-4 text-white" /></div>
-          <span className="text-white font-bold tracking-tight">Viewfinder</span>
+          <Logo size="sm" />
         </div>
         <Bell className="w-5 h-5 text-zinc-500" />
       </div>
@@ -291,7 +325,6 @@ const ClientFeed = ({ onViewProfile }) => (
           <div key={`${photographer.id}-${idx}`} className="relative w-full h-screen">
             <div className="absolute inset-0" style={{ background: g(pi * 2 + idx) }} />
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent" />
-            {/* Top pill */}
             <div className="absolute top-6 left-4 right-4 flex items-center justify-between">
               <div className="flex items-center gap-2 bg-black/40 backdrop-blur-sm rounded-full px-3 py-1.5">
                 <Avatar name={photographer.name} seed={photographer.id} size="xs" />
@@ -406,7 +439,7 @@ const ClientBookings = ({ onViewGallery }) => {
               <Pill color={statusColor[b.status]}>{b.status}</Pill>
             </div>
             {b.hasGallery ? (
-              <button onClick={() => onViewGallery(b)} className="w-full py-2.5 rounded-xl border border-zinc-700 hover:border-zinc-500 text-sm font-semibold text-white flex items-center justify-center gap-2 transition" style={{ background: 'linear-gradient(135deg, rgba(102,126,234,0.1), rgba(240,147,251,0.1))' }}>
+              <button onClick={() => onViewGallery(b)} className="w-full py-2.5 rounded-xl border text-sm font-semibold text-white flex items-center justify-center gap-2 transition" style={{ background: ACCENT_DIM, borderColor: ACCENT_BORDER }}>
                 <Image className="w-4 h-4" /> View Gallery · {b.photoCount} photos
               </button>
             ) : (
@@ -478,8 +511,7 @@ const PhotographerFeed = ({ onViewProfile }) => (
     <div className="bg-black/60 backdrop-blur-xl border-b border-white/5 fixed top-0 left-0 right-0 z-40">
       <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: PRIMARY }}><Camera className="w-4 h-4 text-white" /></div>
-          <span className="text-white font-bold tracking-tight">Viewfinder</span>
+          <Logo size="sm" />
         </div>
         <Pill color="purple">Photographer</Pill>
       </div>
@@ -555,7 +587,7 @@ const GalleryDetail = ({ gallery, onBack }) => {
       </div>
       <div className="max-w-2xl mx-auto px-4 pt-4">
         {/* Post to feed banner */}
-        <div className="rounded-2xl p-4 mb-4 border border-violet-500/20" style={{ background: 'linear-gradient(135deg, rgba(102,126,234,0.08), rgba(240,147,251,0.08))' }}>
+        <div className="rounded-2xl p-4 mb-4" style={{ background: ACCENT_DIM, border: `1px solid ${ACCENT_BORDER}` }}>
           <div className="flex items-center justify-between mb-1.5">
             <p className="text-white font-semibold text-sm">Post to Discovery Feed</p>
             <span className="text-xs text-zinc-400">{selectedForFeed.length} selected</span>
