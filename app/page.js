@@ -3,6 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { Heart, MapPin, Camera, Calendar, Star, Filter, Search, X, MessageCircle, Home, User, Mail } from 'lucide-react';
 
+// Photo helper — seeded Unsplash URLs for consistent images
+const getPhoto = (keyword, seed, w = 800, h = 1000) =>
+  `https://source.unsplash.com/${w}x${h}/?${keyword}&sig=${seed}`;
+
 // Mock photographer data
 const photographers = [
   {
@@ -14,6 +18,8 @@ const photographers = [
     bio: "Capturing love stories across the Lowcountry for 8+ years. I believe in natural moments and golden hour magic.",
     rating: 4.9,
     reviews: 127,
+    photoKeyword: "wedding,bride",
+    avatar: "https://source.unsplash.com/200x200/?woman,portrait&sig=101",
     packages: [
       { name: "Engagement Session", price: "$450", details: "2 hours, 50+ edited photos, online gallery" },
       { name: "Full Wedding Day", price: "$3,200", details: "8 hours, 500+ photos, second shooter, album" }
@@ -28,6 +34,8 @@ const photographers = [
     bio: "Creative portrait photographer specializing in personal branding and lifestyle. Let's tell your story.",
     rating: 4.8,
     reviews: 89,
+    photoKeyword: "portrait,moody",
+    avatar: "https://source.unsplash.com/200x200/?man,portrait&sig=102",
     packages: [
       { name: "Headshot Session", price: "$250", details: "1 hour, 10 edited photos, digital delivery" },
       { name: "Personal Branding", price: "$650", details: "3 hours, 40+ photos, multiple locations" }
@@ -42,6 +50,8 @@ const photographers = [
     bio: "Mom of three, lover of chaos and genuine smiles. I specialize in making families feel comfortable.",
     rating: 5.0,
     reviews: 156,
+    photoKeyword: "family,beach",
+    avatar: "https://source.unsplash.com/200x200/?woman,smile&sig=103",
     packages: [
       { name: "Family Session", price: "$400", details: "1.5 hours, beach or park location, 30+ photos" },
       { name: "Maternity Package", price: "$550", details: "2 sessions, 50+ photos, maternity gown included" }
@@ -56,6 +66,8 @@ const photographers = [
     bio: "Architectural and real estate photography that sells homes. Fast turnaround, professional quality.",
     rating: 4.7,
     reviews: 203,
+    photoKeyword: "architecture,interior",
+    avatar: "https://source.unsplash.com/200x200/?man,professional&sig=104",
     packages: [
       { name: "Basic Listing", price: "$175", details: "Up to 2000 sq ft, 20-25 photos, 24hr delivery" },
       { name: "Luxury Property", price: "$350", details: "Any size, 40+ photos, twilight shots, drone" }
@@ -70,6 +82,8 @@ const photographers = [
     bio: "Event photographer capturing the energy and moments that matter. Corporate events, conferences, and celebrations.",
     rating: 4.9,
     reviews: 94,
+    photoKeyword: "event,celebration",
+    avatar: "https://source.unsplash.com/200x200/?woman,professional&sig=105",
     packages: [
       { name: "Half Day Event", price: "$600", details: "4 hours coverage, 200+ photos, online gallery" },
       { name: "Full Day Corporate", price: "$1,200", details: "8 hours, unlimited photos, same-day highlights" }
@@ -84,6 +98,8 @@ const photographers = [
     bio: "Product and commercial photographer for brands and small businesses. Studio available.",
     rating: 4.8,
     reviews: 67,
+    photoKeyword: "product,studio",
+    avatar: "https://source.unsplash.com/200x200/?man,asian&sig=106",
     packages: [
       { name: "Product Photography", price: "$400", details: "Up to 10 products, white background, basic edits" },
       { name: "Brand Package", price: "$1,500", details: "Full day studio, 50+ final images, lifestyle & product" }
@@ -98,6 +114,8 @@ const photographers = [
     bio: "Film photographer capturing timeless love stories. I shoot mostly film with digital backup for the perfect blend.",
     rating: 5.0,
     reviews: 142,
+    photoKeyword: "wedding,film",
+    avatar: "https://source.unsplash.com/200x200/?woman,redhead&sig=107",
     packages: [
       { name: "Engagement + Film", price: "$600", details: "3 hours, mix of film + digital, 60+ photos" },
       { name: "Wedding Collection", price: "$4,500", details: "10 hours, film + digital, album, prints" }
@@ -112,6 +130,8 @@ const photographers = [
     bio: "Creative director and photographer. I love working with musicians, artists, and creatives to build their visual brand.",
     rating: 4.9,
     reviews: 78,
+    photoKeyword: "urban,cinematic",
+    avatar: "https://source.unsplash.com/200x200/?man,creative&sig=108",
     packages: [
       { name: "Artist Session", price: "$350", details: "2 hours, urban locations, 25+ edited photos" },
       { name: "Album Cover Package", price: "$800", details: "Full concept development, 4 hours, unlimited edits" }
@@ -156,15 +176,6 @@ const BottomNav = ({ activeView, onNavigate }) => {
 };
 
 const ForYouFeed = ({ onViewProfile }) => {
-  const gradients = [
-    'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-    'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-    'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-    'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-    'linear-gradient(135deg, #30cfd0 0%, #330867 100%)'
-  ];
-
   return (
     <div className="min-h-screen bg-black pb-20">
       <div className="bg-black/50 backdrop-blur-lg border-b border-white/10 fixed top-0 left-0 right-0 z-40">
@@ -178,21 +189,18 @@ const ForYouFeed = ({ onViewProfile }) => {
 
       <div className="max-w-4xl mx-auto pt-14">
         {photographers.map((photographer, photoIdx) => (
-          // Create 3 "photos" per photographer
           Array(3).fill(0).map((_, idx) => (
-            <div 
+            <div
               key={`${photographer.id}-${idx}`}
               className="relative min-h-screen flex items-center justify-center bg-black border-b border-gray-900"
             >
               <div className="relative w-full h-screen">
-                {/* Gradient background instead of image */}
-                <div 
-                  className="w-full h-full"
-                  style={{ background: gradients[(photoIdx * 3 + idx) % gradients.length] }}
-                ></div>
-                
+                <img
+                  src={getPhoto(photographer.photoKeyword, photographer.id * 10 + idx)}
+                  alt={photographer.specialty}
+                  className="w-full h-full object-cover"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
-                
                 <div className="absolute bottom-20 left-0 right-0 p-4">
                   <div className="max-w-2xl">
                     <div className="mb-3">
@@ -200,7 +208,7 @@ const ForYouFeed = ({ onViewProfile }) => {
                       <p className="text-white/80 text-sm">{photographer.specialty}</p>
                     </div>
                     <p className="text-white/90 text-sm mb-3">{photographer.bio}</p>
-                    <button 
+                    <button
                       onClick={() => onViewProfile(photographer)}
                       className="w-full px-6 py-3 bg-white hover:bg-gray-100 text-black font-semibold rounded-lg transition"
                     >
@@ -310,23 +318,20 @@ const FindPhotographersPage = ({ onViewProfile, selectedFilters, onFilterChange 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {filteredPhotographers.map((photographer, photoIdx) => (
             Array(3).fill(0).map((_, idx) => (
-              <div 
+              <div
                 key={`${photographer.id}-${idx}`}
                 onClick={() => onViewProfile(photographer)}
-                className="aspect-square rounded-lg overflow-hidden cursor-pointer group relative"
-                style={{ background: gradients[(photoIdx * 3 + idx) % gradients.length] }}
+                className="aspect-square rounded-lg overflow-hidden cursor-pointer group relative bg-zinc-900"
               >
+                <img
+                  src={getPhoto(photographer.photoKeyword, photographer.id * 10 + idx, 400, 400)}
+                  alt={photographer.specialty}
+                  className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition">
                   <div className="absolute bottom-0 left-0 right-0 p-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-full bg-white/20 backdrop-blur flex items-center justify-center text-white text-xs font-bold">
-                        {photographer.name.split(' ').map(n => n[0]).join('')}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-white font-semibold text-xs truncate">{photographer.name}</p>
-                        <p className="text-white/80 text-xs truncate">{photographer.specialty}</p>
-                      </div>
-                    </div>
+                    <p className="text-white font-semibold text-xs truncate">{photographer.name}</p>
+                    <p className="text-white/80 text-xs truncate">{photographer.specialty}</p>
                   </div>
                 </div>
               </div>
@@ -358,16 +363,17 @@ const SavedPage = ({ onViewProfile }) => {
       <div className="max-w-6xl mx-auto px-4 py-6">
         <div className="space-y-4">
           {savedPhotographers.map((photographer, photoIdx) => (
-            <div 
+            <div
               key={photographer.id}
               onClick={() => onViewProfile(photographer)}
               className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-zinc-700 cursor-pointer"
             >
               <div className="flex items-start gap-4 mb-3">
-                <div className="w-16 h-16 rounded-full border-2 border-zinc-800 flex items-center justify-center text-white font-bold text-lg"
-                     style={{ background: gradients[photoIdx] }}>
-                  {photographer.name.split(' ').map(n => n[0]).join('')}
-                </div>
+                <img
+                  src={photographer.avatar}
+                  alt={photographer.name}
+                  className="w-16 h-16 rounded-full border-2 border-zinc-800 object-cover"
+                />
                 <div className="flex-1">
                   <h3 className="text-white font-bold text-lg mb-1">{photographer.name}</h3>
                   <p className="text-zinc-400 text-sm mb-2">{photographer.specialty}</p>
@@ -379,11 +385,15 @@ const SavedPage = ({ onViewProfile }) => {
                 </div>
                 <Heart className="w-6 h-6 text-rose-500 fill-rose-500" />
               </div>
-              
+
               <div className="grid grid-cols-3 gap-2">
                 {Array(3).fill(0).map((_, idx) => (
-                  <div key={idx} className="aspect-square rounded-lg" 
-                       style={{ background: gradients[(photoIdx + idx) % gradients.length] }}>
+                  <div key={idx} className="aspect-square rounded-lg overflow-hidden bg-zinc-800">
+                    <img
+                      src={getPhoto(photographer.photoKeyword, photographer.id * 10 + idx, 300, 300)}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                 ))}
               </div>
@@ -452,10 +462,11 @@ const MessagesPage = () => {
             }`}
           >
             <div className="flex items-start gap-3">
-              <div className="w-12 h-12 rounded-full border-2 border-zinc-800 flex items-center justify-center text-white font-bold"
-                   style={{ background: gradients[idx] }}>
-                {message.photographer.name.split(' ').map(n => n[0]).join('')}
-              </div>
+              <img
+                src={message.photographer.avatar}
+                alt={message.photographer.name}
+                className="w-12 h-12 rounded-full border-2 border-zinc-800 object-cover flex-shrink-0"
+              />
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline justify-between mb-1">
                   <h3 className={`font-semibold ${message.unread ? 'text-white' : 'text-zinc-300'}`}>
@@ -599,10 +610,11 @@ const PhotographerProfile = ({ photographer, onBack, onBook }) => {
       <div className="max-w-6xl mx-auto px-4 py-6">
         <div className="flex flex-col gap-4 mb-6">
           <div className="flex items-start gap-4">
-            <div className="w-20 h-20 rounded-full border-4 border-zinc-800 flex items-center justify-center text-white font-bold text-xl"
-                 style={{ background: gradients[photographer.id % gradients.length] }}>
-              {photographer.name.split(' ').map(n => n[0]).join('')}
-            </div>
+            <img
+              src={photographer.avatar}
+              alt={photographer.name}
+              className="w-20 h-20 rounded-full border-4 border-zinc-800 object-cover flex-shrink-0"
+            />
             <div className="flex-1">
               <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">{photographer.name}</h1>
               <div className="flex flex-wrap items-center gap-3 text-zinc-400 text-sm mb-2">
@@ -622,12 +634,12 @@ const PhotographerProfile = ({ photographer, onBack, onBook }) => {
               </div>
             </div>
           </div>
-          
+
           <p className="text-zinc-300 text-sm">{photographer.bio}</p>
-          
+
           <div className="flex flex-wrap gap-2">
             {photographer.style.map((style, idx) => (
-              <span 
+              <span
                 key={idx}
                 className="px-3 py-1 bg-zinc-800 text-zinc-300 rounded-full text-xs font-medium border border-zinc-700"
               >
@@ -637,7 +649,7 @@ const PhotographerProfile = ({ photographer, onBack, onBook }) => {
           </div>
 
           <div className="flex gap-3">
-            <button 
+            <button
               onClick={() => onBook(photographer)}
               className="flex-1 px-6 py-3 bg-white hover:bg-zinc-100 text-black font-semibold rounded-lg transition flex items-center justify-center gap-2"
             >
@@ -653,8 +665,14 @@ const PhotographerProfile = ({ photographer, onBack, onBook }) => {
         <div className="mb-6">
           <h2 className="text-xl font-bold text-white mb-4">Portfolio</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {gradients.map((gradient, idx) => (
-              <div key={idx} className="aspect-square rounded-lg" style={{ background: gradient }}></div>
+            {Array(6).fill(0).map((_, idx) => (
+              <div key={idx} className="aspect-square rounded-lg overflow-hidden bg-zinc-900">
+                <img
+                  src={getPhoto(photographer.photoKeyword, photographer.id * 10 + idx, 400, 400)}
+                  alt=""
+                  className="w-full h-full object-cover hover:scale-105 transition duration-300"
+                />
+              </div>
             ))}
           </div>
         </div>
@@ -968,4 +986,3 @@ export default function App() {
     </div>
   );
 }
-
